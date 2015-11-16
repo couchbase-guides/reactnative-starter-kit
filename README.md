@@ -25,7 +25,7 @@ and by passing this URL to the JavaScript code, you will persist documents like 
 - Node.js 4.0 or higher
 - [Android Studio](http://developer.android.com/sdk/installing/studio.html) and an emulator
 
-## Getting Started
+## TL;DR
 
 To **skip the basics**, do the following:
 
