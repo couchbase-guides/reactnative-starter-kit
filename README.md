@@ -1,78 +1,30 @@
-# React Native Android Guide
+# React Native Starter Kit (for Android only so far)
 
-This guide walks you through the process of bundling and configuring the Couchbase dependencies in an Android application that's using React Native.
+This starter kit includes all of the dependencies you will need to persist documents to a Couchbase Lite database in a React Native project. You will find the following:
 
-## What you'll build
-
-You'll use the React Native Android starter project to persist documents locally to Couchbase Lite and replicate them to Sync Gateway
-
-![](assets/demo-ui.png)
-
-The Couchbase Lite database URL will contain a randomly generated username and password for security reasons:
-
-```
-http://u8io2rhj32cn293nci239:9nc02u39j0ci3ckn29c@localhost:5984/todos
-```
-
-and by passing this URL to the JavaScript code, you will persist documents like so:
-
-```
-{"type": "task", "text": "Learn React Native"}
-```
+- React Native
+- Couchbase Lite
+- React Native Module to interface with the Couchbase Lite database
+- Initial Couchbase Lite REST API wrapper for Fetch
 
 ## Prerequisites
 
 - Node.js 4.0 or higher
 - [Android Studio](http://developer.android.com/sdk/installing/studio.html) and an emulator
 
-## TL;DR
+## Getting Started
 
-To **skip the basics**, do the following:
+Just clone the repo and start coding:
 
-- Download and unzip the source for this guide or clone it: `git clone https://github.com/jamiltz/reactnative-android-guide`
-- cd into `reactnative-android-guide/initial`
-
-## Using CBLModule
-
-The initial project is already using the Native Module called `CBLModule` to instantiate the Couchbase Lite `Manager` object and start the Listener with a random username and password on port `5984`. You can find out more about how Native Modules work by reading this part of the [React Native documentation](http://facebook.github.io/react-native/docs/native-modules-android.html#callbacks). With that in mind, you can now add some JavaScript code to interface with the `CBLModule` and retrieve the database listener URL. At a high level, React Native uses [fetch](https://facebook.github.io/react-native/docs/network.html) for any network request and in this case, you must specify certain fields in the `options` object. For example, to create a document in a database named **todos**, you would do the following:
-
-```js
-fetch(localDatabaseUrl + '/todos', {
-	method: 'post',
-	body: JSON.stringify({text: 'Learn React Native', 'type': 'task'}),
-	credentials: 'include'
-}
+```
+$ git clone https://github.com/jamiltz/reactnative-android-guide
+$ cd reactnative-starter-kit
+$ cd android
+$ npm install
+$ npm start
 ```
 
-In the `componentWillMount` method of **initial/app/components/Home.js**, add the following:
-
-```js
-CBLModule.getUrl((err) => {
-      console.log('Callback error :: ' + err);
-    }, (url) => {
-      api.localDatabaseUrl = url.substring(0, url.length - 1);
-
-      api.getTodos()
-        .then((res) => {
-          var todos = res.rows.map(function (row) {
-            return row.doc;
-          });
-          this.setState({
-            todos: todos
-          });
-        });
-    });
-```
-
-Here, you're using the `CBLModule` to retrieve the secure URL and then loading the different task items in a ListView. You can open **initial/app/utils/api.js** to see what the `api` object looks like. There are 3 methods:
-
-- `saveTodo`: Saves a new document to the local database
-- `getTodos`: Retrieves all the documents from the database (it also creates the database if it doesn't already exist)
-- `startSync`: Kicks off a continuous push replication.
-
-Notice in this file that `remoteDatabaseUrl` is **http://localhost:4984**. So in the section, you will set up Sync Gateway locally.
-
-## Adding Sync Gateway
+## Sync Gateway
 
 Download Sync Gateway from the link below and unzip the file:
 
@@ -108,8 +60,50 @@ Open the Admin UI to monitor the documents that were saved to Sync Gateway:
 
 > http://localhost:4985/_admin/
 
-Try adding more task documents and notice how they get pushed to Sync Gateway automatically.
+## CBLModule
 
-## Summary
+In order to make the Couchbase Lite functionalities accessible from the React Native application written in JavaScript, we've added a Native Module called `CBLModule` to start the Couchbase Lite Listener with a random username and password on port `5984`. You can find out more about how Native Modules work by reading [this part](http://facebook.github.io/react-native/docs/native-modules-android.html#callbacks) of the React Native documentation. To get the Couchbase Lite URL asynchronously, you can simply use the `getUrl` method from the `CBLModule`. With that URL, use [fetch](https://facebook.github.io/react-native/docs/network.html) to send any network request to the database. You can extend the basic wrapper for the Couchbase Lite REST API already available in this project:
 
-Congratulations! You've just got your React Native Android + Couchbase environment set up and you're now ready to make use of all the great of features of React Native such as [Live Reload](https://facebook.github.io/react-native/docs/debugging.html) and [UI Components](https://facebook.github.io/react-native/docs/native-components-android.html#content). Check out the [Listener API](http://developer.couchbase.com/documentation/mobile/1.1.0/develop/references/couchbase-lite/rest-api/index.html) reference to add more functionality to the API object.
+```js
+var React = require('react-native');
+var couchbase = require('./../utils/couchbase-lite-fetch');
+var CBLModule = require('./../utils/CBLModule');
+
+var {
+  Text,
+  View,
+  } = React;
+
+class Home extends React.Component {
+  componentWillMount() {
+    CBLModule.getUrl((err) => {
+      console.log('Callback error :: ' + err);
+    }, (url) => {
+      var db = new couchbase(url, "todos");
+      db.createDatabase()
+        .then((res) => {
+          db.createDocument({"text": "hello there"})
+            .then((res) => {
+              console.log(res);
+            });
+          return res;
+        });
+    });
+  }
+  
+  render() {
+    return (
+      <View>
+        <Text>Hello</Text>
+      </View>
+    );
+  }
+
+}
+
+module.exports = Home;
+```
+
+
+
+Read more about the available endpoints on the REST API in the [documentation](http://developer.couchbase.com/documentation/mobile/1.1.0/develop/references/couchbase-lite/rest-api/index.html).
