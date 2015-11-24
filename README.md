@@ -24,6 +24,15 @@ $ npm install
 $ npm start
 ```
 
+To install the app on the emulator:
+
+```
+$ cd android
+$ ./gradlew installDebug
+```
+
+Watch this [short screencast](https://www.youtube.com/watch?v=ajHughXQ5Yw) for more debugging tips.
+
 ## Sync Gateway
 
 Download Sync Gateway from the link below and unzip the file:
