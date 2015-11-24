@@ -17,7 +17,7 @@ This starter kit includes all of the dependencies you will need to persist docum
 Just clone the repo and start coding:
 
 ```
-$ git clone https://github.com/jamiltz/reactnative-android-guide
+$ git clone https://github.com/couchbaselabs/reactnative-starter-kit.git
 $ cd reactnative-starter-kit
 $ cd android
 $ npm install
